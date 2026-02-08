@@ -1,0 +1,37 @@
+# configs/trainer/default.yaml
+
+lightning_trainer:
+  _target_: lightning.pytorch.trainer.Trainer
+  max_steps: 4000
+  accelerator: gpu
+  precision: 16-mixed
+  devices: ${devices}
+  val_check_interval: 1.0
+  log_every_n_steps: 50
+
+lightning_module:
+  _target_: src.engine.pl_module.VesselSystem
+  _partial_: True
+  prediction_threshold: 0.5
+  
+  # ✅ 精确对齐原版推理参数
+  roi_size: ${input_size}
+  sw_batch_size: 4
+  overlap: 0.5
+  mode: "gaussian"
+
+  # Loss 设置
+  loss:
+    _target_: monai.losses.DiceCELoss
+    sigmoid: True
+    reduction: "mean"
+    squared_pred: True
+    lambda_ce: 0.1
+    lambda_dice: 0.9
+
+  # 优化器设置
+  optimizer_factory:
+    _target_: torch.optim.AdamW
+    _partial_: True
+    lr: ${lr}
+    weight_decay: 0.1

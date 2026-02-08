@@ -1,0 +1,22 @@
+# 数据集和垃圾桶
+data/
+.Trash-0/
+
+# 训练输出与权重
+outputs/
+tb_logs/
+*.pth
+*.onnx
+*.weights
+*.pkl
+
+# 日志与临时文件
+*.log
+cufile.log
+untitled.txt
+.ipynb_checkpoints/
+.autodl/
+
+# Python 环境
+__pycache__/
+*.pyc

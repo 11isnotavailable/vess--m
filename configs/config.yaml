@@ -1,0 +1,22 @@
+# configs/config.yaml
+defaults:
+  - _self_
+  - model: fusion
+  - data: finger_h5
+  - trainer: default
+
+# ✅ 4090 性能优化：定义全局 ROI 尺寸
+input_size: [96, 96, 96] 
+
+seed: 1337
+lr: 1e-4
+batch_size: 12
+run_name: vessel_experiment_v2
+chkpt_folder: "checkpoints/${run_name}"
+devices: [0]
+
+# 日志配置
+logger:
+  _target_: lightning.pytorch.loggers.TensorBoardLogger
+  save_dir: "tb_logs"
+  name: ${run_name}
