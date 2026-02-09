@@ -14,7 +14,7 @@ class VesselSystem(pl.LightningModule):
         
         # 实例化 Loss
         self.main_criterion = hydra.utils.instantiate(cfg.trainer.lightning_module.loss)
-        self.aux_criterion = torch.nn.BCELoss()
+        self.aux_criterion = torch.nn.BCEWithLogitsLoss()
         self.evaluator = Evaluator()
 
         # ✅ 完美重现原版实现：直接从配置读取滑动窗口参数
@@ -83,8 +83,8 @@ class VesselSystem(pl.LightningModule):
         
         # ✅ 修改：添加 prog_bar=True 即可在终端进度条实时看到数值
         self.log("val/loss", loss, prog_bar=True)
-        self.log("val/dice", metrics["dice"], prog_bar=True)
-        self.log("val/cldice", metrics["cldice"], prog_bar=True)
+        self.log("val/dice", metrics["Dice"], prog_bar=True)
+        self.log("val/cldice", metrics["clDice"], prog_bar=True)
         
         return loss
 

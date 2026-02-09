@@ -22,7 +22,6 @@ def main(cfg: DictConfig):
     cfg.data.path = to_absolute_path(cfg.data.path)
     
     datamodule = hydra.utils.instantiate(cfg.data)
-    # 💡 关键修复：在 fit 之前手动执行 setup
     datamodule.setup(stage="fit")
 
     # 4. 实例化模型系统

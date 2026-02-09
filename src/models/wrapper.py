@@ -18,28 +18,36 @@ class VesselFM_Refactored(DynUNetBackbone):
             self.fuse_L4 = SlabFusionStack(depth=2, c3d=c3[4], c2d=320, embed_dim=384, num_heads=8)
 
     def _slab_mip(self, x3d, slab=4):
-        # 完美复现原版 slab-MIP 逻辑
+        """
+        修正后的 MIP 逻辑：返回 [B, K, 1, H, W] 格式
+        """
         B, C, D, H, W = x3d.shape
         pad = (slab - (D % slab)) % slab
         if pad > 0: x3d = torch.nn.functional.pad(x3d, (0, 0, 0, 0, 0, pad))
         K = (D + pad) // slab
+        
+        # [B, C, K, slab, H, W] -> [B, C, K, H, W]
         x = x3d.view(B, C, K, slab, H, W)
-        return torch.amax(x, dim=3).permute(0, 1, 3, 4, 2).contiguous()
+        x_mip = torch.amax(x, dim=3)
+        
+        # 调整为 [B, K, C, H, W] 以配合后续处理
+        return x_mip.permute(0, 2, 1, 3, 4).contiguous()
 
     def forward(self, x):
-        # 记录原始深度 D0 用于索引映射
         D0 = x.shape[2]
         feats_3d = self.encoder_forward(x)
         
         if not self.use_fusion:
             return self.decoder_forward(feats_3d), {}
 
+        # mip_bk 现在的形状是 [B, K, 1, H, W]
         mip_bk = self._slab_mip(x, self.slab_thickness)
-        B, C, H, W, K = mip_bk.shape
-        # 2D 支路特征提取
-        feats_2d = self.mip_encoder(mip_bk.permute(0, 4, 1, 2, 3).reshape(B*K, C, H, W))
+        B, K, C, H, W = mip_bk.shape
         
-        # 将 K 维还原并进行分片融合
+        # 2D 支路特征提取：reshape 为 [B*K, 1, H, W]
+        feats_2d = self.mip_encoder(mip_bk.view(B * K, C, H, W))
+        
+        # 将特征还原为 [B, K, C_feat, H_feat, W_feat] 并转换顺序为 [B, C_feat, H_feat, W_feat, K] 适配 Attention
         f2_L3 = feats_2d[3].view(B, K, -1, H//8, W//8).permute(0, 2, 3, 4, 1).contiguous()
         f2_L4 = feats_2d[4].view(B, K, -1, H//16, W//16).permute(0, 2, 3, 4, 1).contiguous()
 
