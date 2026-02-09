@@ -11,11 +11,26 @@ from tqdm import tqdm
 @hydra.main(config_path="configs", config_name="config", version_base="1.3.2")
 def main(cfg: DictConfig):
     # 1. 定义所有要集成的权重路径
-    ckpt_root = Path("/root/autodl-tmp/tb_logs/vessel_experiment_v2/version_14/checkpoints/")
+    
+    # ckpt_root = Path("/root/autodl-tmp/tb_logs/vessel_experiment_v2/version_14/checkpoints/")
+    # ckpt_files = [
+    #     "epoch=epoch=150-step=step=2114.ckpt",
+    #     "epoch=epoch=256-step=step=3598.ckpt",
+    #     "epoch=epoch=370-step=step=5194.ckpt",
+    #     "last.ckpt"
+    # ]
+    # ckpt_root = Path("/root/autodl-tmp/tb_logs/vessel_experiment_v2/version_15/checkpoints/")
+    # ckpt_files = [
+    #     "epoch=epoch=154-step=step=2170.ckpt",
+    #     "epoch=epoch=50-step=step=714.ckpt",
+    #     "epoch=epoch=566-step=step=7938.ckpt",
+    #     "last.ckpt"
+    # ]
+    ckpt_root = Path("/root/autodl-tmp/tb_logs/vessel_experiment_v2/version_16/checkpoints/")
     ckpt_files = [
-        "epoch=epoch=150-step=step=2114.ckpt",
-        "epoch=epoch=256-step=step=3598.ckpt",
-        "epoch=epoch=370-step=step=5194.ckpt",
+        "epoch=epoch=208-step=step=2926.ckpt",
+        "epoch=epoch=225-step=step=3164.ckpt",
+        "epoch=epoch=95-step=step=1344.ckpt",
         "last.ckpt"
     ]
     ckpt_paths = [ckpt_root / f for f in ckpt_files]

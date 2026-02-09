@@ -10,7 +10,9 @@ from tqdm import tqdm
 @hydra.main(config_path="configs", config_name="config", version_base="1.3.2")
 def main(cfg: DictConfig):
     # 1. 加载模型 (修正后的路径)
-    ckpt_path = Path("/root/autodl-tmp/tb_logs/vessel_experiment_v2/version_14/checkpoints/last.ckpt")
+    ckpt_path = Path("/root/autodl-tmp/tb_logs/vessel_experiment_v2/version_16/checkpoints/epoch=epoch=208-step=step=2926.ckpt")
+    #ckpt_path = Path("/root/autodl-tmp/tb_logs/vessel_experiment_v2/version_15/checkpoints/epoch=epoch=154-step=step=2170.ckpt")
+    #ckpt_path = Path("/root/autodl-tmp/tb_logs/vessel_experiment_v2/version_14/checkpoints/epoch=epoch=150-step=step=2114.ckpt")
     model = hydra.utils.instantiate(cfg.model)
     system = VesselSystem.load_from_checkpoint(ckpt_path, model=model, cfg=cfg, map_location="cuda:0", strict=False)
     system.eval().cuda()

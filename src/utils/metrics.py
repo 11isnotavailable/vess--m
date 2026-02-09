@@ -68,7 +68,7 @@ class Evaluator:
         """
         主入口：返回图片要求的 5 个核心指标 + Betti Error。
         """
-        threshold = 0.5 
+        threshold = 0.486 
         
         # 转为 Numpy 并进行二值化
         p = (pred_tensor.detach().cpu().numpy() > threshold).astype(np.float32)

@@ -52,6 +52,17 @@ class VesselSystem(pl.LightningModule):
         
         # 计算主分割损失 (Dice + CE)
         loss_seg = self.main_criterion(pred_mask, mask.float())
+
+        # 2. 🚀 新增：投影一致性损失 (Consistency Loss)
+        loss_consist = 0
+        if "pred_3d_mip" in aux_dict:
+            # 生成金标(Mask)的分层 MIP 投影作为目标
+            with torch.no_grad():
+                mask_mip = self.model._slab_mip(mask.float(), self.model.slab_thickness)
+            
+            # 强制 3D 预测的投影图(Sigmoid后)与金标投影图一致
+            # 这里使用 MSE 损失来约束概率分布
+            loss_consist = F.mse_loss(aux_dict["pred_3d_mip"].sigmoid(), mask_mip)
         
         # 计算拓扑感知辅助损失
         loss_topo = 0
@@ -63,10 +74,17 @@ class VesselSystem(pl.LightningModule):
         
         # 组合总损失
         lambda_topo = getattr(self.cfg.model, "lambda_topo", 0.3)
-        total_loss = loss_seg + (lambda_topo * loss_topo if topo_count > 0 else 0)
+        #total_loss = loss_seg + (lambda_topo * loss_topo if topo_count > 0 else 0)
+        lambda_consist = 0.2  # 🚀 这是新增的一致性损失权重，可调
+        
+        total_loss = loss_seg + \
+                     (lambda_topo * loss_topo if topo_count > 0 else 0) + \
+                     (lambda_consist * loss_consist if loss_consist != 0 else 0)
         
         # 记录日志
         self.log("train/loss", total_loss, prog_bar=True)
+
+        self.log("train/loss_consist", loss_consist, prog_bar=False)
         return total_loss
 
     def validation_step(self, batch, batch_idx):
